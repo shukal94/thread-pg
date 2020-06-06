@@ -2,7 +2,6 @@ package com.solvd.lab.chat.threaded.bo;
 
 import com.solvd.lab.chat.threaded.bo.adapter.DateAdapter;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -27,7 +26,7 @@ public class Message {
     }
 
 
-    @XmlElement(name = "title")
+    @XmlElement(name = "content")
     public void setContent(String content) {
         this.content = content;
     }
@@ -57,5 +56,18 @@ public class Message {
     @Override
     public String toString() {
         return "Message [" + content + " - said " + date.getTime() + "]";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this.getClass() != o.getClass()) {
+            return false;
+        }
+        if (o == null) {
+            return false;
+        }
+        return content.equals(((Message) o).getContent()) &&
+                author.equals(((Message) o).getAuthor()) &&
+                date.compareTo(((Message) o).getDate()) == 0;
     }
 }

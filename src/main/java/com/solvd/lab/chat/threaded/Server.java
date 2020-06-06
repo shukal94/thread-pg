@@ -11,10 +11,7 @@ import org.apache.log4j.Logger;
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Server {
     private static final Logger LOGGER = Logger.getLogger(Server.class);
@@ -25,8 +22,9 @@ public class Server {
     private static final String PATH_TO_LISTEN = config.getMsgPath();
     private static final Set<String> AVAILABLE_CLIENTS = config.getAvailableClients();
 
-    private static List<Message> history = Collections.synchronizedList(new ArrayList<>());
+    private static Set<String> history = Collections.synchronizedSet(new HashSet<>());
 
+    // TODO: introduce bandwidth and real parallelism
     public static void main(String[] args) throws InterruptedException {
         listen();
     }
@@ -42,10 +40,10 @@ public class Server {
             String[] fileLs = new File(PATH_TO_LISTEN).getAbsoluteFile().list();
             int numOfMsgs = fileLs.length;
             if (numOfMsgs > 0) {
+                // parallel log and push in history numOfMsgs at one moment
                 for (String filePath : fileLs) {
                     Connection conn = new Connection(PATH_TO_LISTEN + IOConstant.PATH_SEP + filePath);
                     conn.run();
-                    conn.join();
                 }
             }
             LOGGER.info("Active threads : ".concat(String.valueOf(Thread.activeCount())));
@@ -66,7 +64,7 @@ public class Server {
             try {
                 Message msg = readMessage(path);
                 LOGGER.info(msg);
-                history.add(msg);
+                history.add(msg.getContent());
             } catch (UnableToReadException e) {
                 e.printStackTrace();
                 currentThread().interrupt();
